@@ -1,0 +1,192 @@
+using System;
+using System.Collections.Generic;
+
+// Interface untuk Kemampuan
+public interface IKemampuan
+{
+    string Nama { get; }
+    int Cooldown { get; set; }
+    void Gunakan(Robot target);
+}
+
+// Abstract class Robot yang akan diwarisi oleh berbagai jenis robot
+public abstract class Robot
+{
+    public string Nama { get; set; }
+    public int Energi { get; set; }
+    public int Armor { get; set; }
+    public int Serangan { get; set; }
+
+    public Robot(string nama, int energi, int armor, int serangan)
+    {
+        Nama = nama;
+        Energi = energi;
+        Armor = armor;
+        Serangan = serangan;
+    }
+
+    // Metode abstrak untuk menyerang robot lain
+    public abstract void Serang(Robot target);
+
+    // Metode untuk menggunakan kemampuan
+    public void GunakanKemampuan(IKemampuan kemampuan, Robot target)
+    {
+        if (kemampuan.Cooldown == 0)
+        {
+            kemampuan.Gunakan(target);
+            kemampuan.Cooldown = 3; // contoh cooldown 3 giliran
+        }
+        else
+        {
+            Console.WriteLine($"{Nama} tidak bisa menggunakan {kemampuan.Nama}, masih dalam cooldown.");
+        }
+    }
+
+    // Metode untuk menampilkan informasi robot
+    public void CetakInformasi()
+    {
+        Console.WriteLine($"Nama: {Nama}, Energi: {Energi}, Armor: {Armor}, Serangan: {Serangan}");
+    }
+}
+
+// Kelas BosRobot yang merupakan turunan dari kelas Robot
+public class BosRobot : Robot
+{
+    public BosRobot(string nama, int energi, int armor, int serangan)
+        : base(nama, energi, armor, serangan)
+    {
+    }
+
+    // Implementasi metode Serang
+    public override void Serang(Robot target)
+    {
+        int damage = Serangan - target.Armor;
+        if (damage > 0)
+        {
+            target.Energi -= damage;
+            Console.WriteLine($"{Nama} menyerang {target.Nama} dengan {damage} damage.");
+        }
+        else
+        {
+            Console.WriteLine($"{Nama} tidak berhasil menembus armor {target.Nama}.");
+        }
+    }
+
+    // Metode khusus jika bos robot mati
+    public void Mati()
+    {
+        Console.WriteLine($"{Nama} telah dikalahkan!");
+    }
+}
+
+// Robot biasa
+public class RobotBiasa : Robot
+{
+    public RobotBiasa(string nama, int energi, int armor, int serangan)
+        : base(nama, energi, armor, serangan)
+    {
+    }
+
+    // Implementasi metode Serang
+    public override void Serang(Robot target)
+    {
+        int damage = Serangan - target.Armor;
+        if (damage > 0)
+        {
+            target.Energi -= damage;
+            Console.WriteLine($"{Nama} menyerang {target.Nama} dengan {damage} damage.");
+        }
+        else
+        {
+            Console.WriteLine($"{Nama} tidak berhasil menembus armor {target.Nama}.");
+        }
+    }
+}
+
+// Implementasi Kemampuan
+public class Perbaikan : IKemampuan
+{
+    public string Nama => "Perbaikan";
+    public int Cooldown { get; set; } = 0;
+
+    public void Gunakan(Robot target)
+    {
+        target.Energi += 20;
+        Console.WriteLine($"{target.Nama} menggunakan {Nama}, energi meningkat menjadi {target.Energi}");
+    }
+}
+
+public class SeranganListrik : IKemampuan
+{
+    public string Nama => "Serangan Listrik";
+    public int Cooldown { get; set; } = 0;
+
+    public void Gunakan(Robot target)
+    {
+        int damage = 15;
+        target.Energi -= damage;
+        Console.WriteLine($"{target.Nama} terkena {Nama}, energi berkurang menjadi {target.Energi}");
+    }
+}
+
+public class SeranganPlasma : IKemampuan
+{
+    public string Nama => "Serangan Plasma";
+    public int Cooldown { get; set; } = 0;
+
+    public void Gunakan(Robot target)
+    {
+        int damage = 25;
+        target.Energi -= damage;
+        Console.WriteLine($"{target.Nama} terkena {Nama}, energi berkurang menjadi {target.Energi}");
+    }
+}
+
+public class PertahananSuper : IKemampuan
+{
+    public string Nama => "Pertahanan Super";
+    public int Cooldown { get; set; } = 0;
+
+    public void Gunakan(Robot target)
+    {
+        target.Armor += 10;
+        Console.WriteLine($"{target.Nama} menggunakan {Nama}, armor meningkat menjadi {target.Armor}");
+    }
+}
+
+// Main program untuk mensimulasikan permainan
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Membuat robot
+        Robot robot1 = new RobotBiasa("Robot Optimus Prime", 100, 10, 20);
+        Robot robot2 = new BosRobot("Bos Omegatron", 200, 20, 30);
+
+        // Membuat kemampuan
+        IKemampuan perbaikan = new Perbaikan();
+        IKemampuan seranganListrik = new SeranganListrik();
+        IKemampuan seranganPlasma = new SeranganPlasma();
+        IKemampuan pertahananSuper = new PertahananSuper();
+
+        // Pertarungan
+        robot1.CetakInformasi();
+        robot2.CetakInformasi();
+        Console.WriteLine();
+
+        robot1.Serang(robot2);
+        robot2.CetakInformasi();
+        Console.WriteLine();
+
+        robot2.GunakanKemampuan(pertahananSuper, robot2);
+        robot2.CetakInformasi();
+        Console.WriteLine();
+
+        robot1.GunakanKemampuan(seranganPlasma, robot2);
+        robot2.CetakInformasi();
+        Console.WriteLine();
+
+        robot2.Serang(robot1);
+        robot1.CetakInformasi();
+    }
+}
